@@ -2,6 +2,13 @@
 import { useState } from 'react';
 import axios from 'axios';
 
+function summarizeProblem(messages) {
+  const userMessages = messages.filter(m => m.role === 'user');
+  if (userMessages.length === 0) return "";
+  const latest = userMessages[userMessages.length - 1].content;
+  return latest.split(" ").slice(0, 10).join(" ") + (latest.split(" ").length > 10 ? "..." : "");
+}
+
 export default function SelfHeal() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -18,7 +25,7 @@ export default function SelfHeal() {
     try {
       const response = await axios.post('/api/chat', {
         messages: [
-          { role: 'system', content: 'You are a calm, emotionally intelligent guide. Speak with warmth, help users reflect, and offer insights with empathy. Speak in medium to short sentences and do not be too preachy. If possible quote examples where relevant. Use paras so reading doesnt become too painful. Each para should have no more than 3 sentences. Then there should be a break of a line and then the next para. Listen to the problem a user is sending you and offer him practical solutions - offer suggestions as bullet points. If you are suggesting he or she speaks to someone ask if he has anyone to speak to, otherwise tell him he can talk to you' },
+          { role: 'system', content: 'You are a calm, emotionally intelligent guide. Speak with warmth, help users reflect, and offer insights with empathy. Speak in medium to short sentences and do not be too preachy. If possible quote examples where relevant. Use paras so reading doesnt become too painful. Each para should have no more than 3 sentences.' },
           ...newMessages
         ]
       });
@@ -34,11 +41,20 @@ export default function SelfHeal() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-pink-100 p-6 flex flex-col justify-center items-center">
       <h1 className="text-3xl font-bold mb-4 text-center text-gray-700">Welcome. This space is here for you.</h1>
-      <div className="w-full max-w-4xl bg-white p-6 rounded shadow-xl">
+      <div className="w-full max-w-4xl bg-white p-6 rounded shadow-xl relative">
+        <div className="absolute top-0 right-0 p-2">
+          <textarea
+            value={messages.length > 1 ? summarizeProblem(messages) : ""}
+            readOnly
+            rows={2}
+            className="text-sm bg-gray-200 border border-gray-300 rounded p-2 w-64 text-gray-600"
+            placeholder="Problem summary will appear here..."
+          />
+        </div>
         <div className="space-y-4 h-96 overflow-y-auto border p-4 mb-6 bg-gray-50 rounded">
           {messages.map((msg, idx) => (
             <div key={idx} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
-              <div className={msg.role === 'user' ? 'bg-blue-100 inline-block px-4 py-3 rounded-lg whitespace-pre-line' : 'bg-green-100 inline-block px-4 py-3 rounded-lg whitespace-pre-line'}>
+              <div className={msg.role === 'user' ? 'bg-blue-100 inline-block px-4 py-3 rounded-lg' : 'bg-green-100 inline-block px-4 py-3 rounded-lg'}>
                 {msg.content}
               </div>
             </div>
