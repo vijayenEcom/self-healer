@@ -17,7 +17,7 @@ export default function SelfHeal() {
     try {
       const response = await axios.post('/api/chat', {
         messages: [
-          { role: 'system', content: 'You are a calm, emotionally intelligent guide. Speak with warmth, help users reflect, and offer insights with empathy. Speak in medium to short sentences and do not be too preachy. If possible quote examples where relevant.' },
+          { role: 'system', content: 'You are a calm, emotionally intelligent guide. Speak with warmth, help users reflect, and offer insights with empathy. Speak in medium to short sentences and do not be too preachy. If possible quote examples where relevant. Use paras so reading doesn't become too painful. Each para should have no more than 3 sentences.' },
           ...newMessages
         ]
       });
