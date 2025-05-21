@@ -2,17 +2,12 @@
 import { useState } from 'react';
 import axios from 'axios';
 
-function summarizeProblem(messages) {
-  const userMessages = messages.filter(m => m.role === 'user');
-  if (userMessages.length === 0) return "";
-  const latest = userMessages[userMessages.length - 1].content;
-  return latest.split(" ").slice(0, 10).join(" ") + (latest.split(" ").length > 10 ? "..." : "");
-}
-
 export default function SelfHeal() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [summary, setSummary] = useState('');
+  const [summarySet, setSummarySet] = useState(false);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -29,8 +24,17 @@ export default function SelfHeal() {
           ...newMessages
         ]
       });
+
       const reply = response.data.reply;
       setMessages([...newMessages, { role: 'assistant', content: reply }]);
+
+      if (!summarySet) {
+        const firstLine = reply.split(/[.!?]/)[0];
+        const shortSummary = firstLine.length > 50 ? firstLine.slice(0, 50) + '...' : firstLine;
+        setSummary(shortSummary);
+        setSummarySet(true);
+      }
+
     } catch {
       setMessages([...newMessages, { role: 'assistant', content: 'Sorry, something went wrong.' }]);
     } finally {
@@ -42,15 +46,15 @@ export default function SelfHeal() {
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-pink-100 p-6 flex flex-col justify-center items-center">
       <h1 className="text-3xl font-bold mb-4 text-center text-gray-700">Welcome. This space is here for you.</h1>
       <div className="w-full max-w-4xl bg-white p-6 rounded shadow-xl relative">
-        <div className="absolute top-0 right-0 p-2">
-          <textarea
-            value={messages.length > 1 ? summarizeProblem(messages) : ""}
-            readOnly
-            rows={2}
-            className="text-sm bg-gray-200 border border-gray-300 rounded p-2 w-64 text-gray-600"
-            placeholder="Problem summary will appear here..."
-          />
-        </div>
+        {summary && (
+          <div className="absolute top-4 right-4 bg-gray-100 p-2 rounded shadow text-sm text-gray-700 w-56 h-20 overflow-auto pointer-events-none">
+            <textarea
+              value={summary}
+              readOnly
+              className="w-full h-full bg-transparent border-none resize-none outline-none"
+            />
+          </div>
+        )}
         <div className="space-y-4 h-96 overflow-y-auto border p-4 mb-6 bg-gray-50 rounded">
           {messages.map((msg, idx) => (
             <div key={idx} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
