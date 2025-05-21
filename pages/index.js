@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import axios from 'axios';
 
@@ -37,7 +38,7 @@ export default function SelfHeal() {
         <div className="space-y-4 h-96 overflow-y-auto border p-4 mb-6 bg-gray-50 rounded">
           {messages.map((msg, idx) => (
             <div key={idx} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
-              <div className={msg.role === 'user' ? 'bg-blue-100 inline-block px-4 py-3 rounded-lg' : 'bg-green-100 inline-block px-4 py-3 rounded-lg'}>
+              <div className={msg.role === 'user' ? 'bg-blue-100 inline-block px-4 py-3 rounded-lg whitespace-pre-line' : 'bg-green-100 inline-block px-4 py-3 rounded-lg whitespace-pre-line'}>
                 {msg.content}
               </div>
             </div>
