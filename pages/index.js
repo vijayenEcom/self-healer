@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css'; // Tailwind or your styles
+import { useState } from 'react';
 
-function SelfHealer() {
+export default function SelfHealer() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [rephrase, setRephrase] = useState('');
@@ -35,7 +33,6 @@ function SelfHealer() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
-        {/* Logo and tagline */}
         <div className="flex justify-between items-center mb-4">
           <div className="text-3xl font-bold text-gray-800">🫂 Self Healer</div>
           <input
@@ -89,6 +86,3 @@ function SelfHealer() {
     </div>
   );
 }
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<SelfHealer />);
