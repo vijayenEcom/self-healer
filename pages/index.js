@@ -27,12 +27,17 @@ export default function SelfHealer() {
 
       const data = await res.json();
 
-      const replyMessage = {
-        type: 'gpt',
-        content: data.reply || "Sorry, I didn’t quite catch that. Try again?",
-      };
+      const replyChunks = (data.reply || "Sorry, I didn’t quite catch that.")
+        .split(/\n{2,}|(?<=\.\s{2,})/) // split on paragraph breaks or sentence groups
+        .map(chunk => chunk.trim())
+        .filter(Boolean);
 
-      setMessages((prev) => [...prev, replyMessage]);
+      const replyMessages = replyChunks.map(content => ({
+        type: 'gpt',
+        content,
+      }));
+
+      setMessages((prev) => [...prev, ...replyMessages]);
     } catch (err) {
       console.error('API Error:', err);
       setMessages((prev) => [
