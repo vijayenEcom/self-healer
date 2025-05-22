@@ -10,11 +10,22 @@ export default async function handler(req, res) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: message }],
-        temperature: 0.7,
-      }),
+  body: JSON.stringify({
+  model: "gpt-3.5-turbo",
+  messages: [
+    {
+      role: "system",
+      content:
+        "You are Self Healer, a calm, emotionally intelligent companion who responds with empathy, warmth, and supportive wisdom. Speak like a best friend with a therapist's clarity—never judgmental, always affirming. Keep language human, warm, conversational, and caring. Avoid clinical jargon. Offer valuable suggestions where you can and ask relevant questions where needed.",
+    },
+    {
+      role: "user",
+      content: message,
+    },
+  ],
+  temperature: 0.7,
+}),
+
     });
 
     const data = await response.json();
