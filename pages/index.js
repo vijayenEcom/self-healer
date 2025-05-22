@@ -73,4 +73,22 @@ function SelfHealer() {
 
         <div className="flex flex-col sm:flex-row items-center mt-4 gap-2">
           <input
-            value
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Share what's on your mind..."
+            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 shadow-sm"
+          />
+          <button
+            onClick={handleSend}
+            className="bg-blue-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-blue-700"
+          >
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<SelfHealer />);
