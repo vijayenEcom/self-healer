@@ -81,10 +81,17 @@ export default function SelfHealer() {
 
         <div className="text-center mt-2 text-xl">❤️ ❤️ 🙏</div>
 
-        <div className="flex flex-col sm:flex-row items-center mt-4 gap-2">
+        <div className="flex flex-col sm:flex-row items-center mt-4 gap-2 w-full">
           <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
             placeholder="Share what's on your mind..."
             className="flex-1 px-4 py-2 rounded-lg border border-gray-300 shadow-sm"
           />
