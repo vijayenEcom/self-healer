@@ -1,87 +1,76 @@
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css'; // Tailwind or your styles
 
-import { useState } from 'react';
-import axios from 'axios';
-
-export default function SelfHeal() {
+function SelfHealer() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [summary, setSummary] = useState('');
-  const [summarySet, setSummarySet] = useState(false);
+  const [rephrase, setRephrase] = useState('');
 
   const handleSend = async () => {
     if (!input.trim()) return;
-    const userMessage = { role: 'user', content: input };
-    const newMessages = [...messages, userMessage];
-    setMessages(newMessages);
-    setInput('');
-    setLoading(true);
 
-    try {
-      const response = await axios.post('/api/chat', {
-        messages: [
-          { role: 'system', content: 'You are a calm, emotionally intelligent guide. Speak with warmth, help users reflect, and offer insights with empathy. Speak in medium to short sentences and do not be too preachy. If possible quote examples where relevant. Use paras so reading doesnt become too painful. Each para should have no more than 3 sentences.' },
-          ...newMessages
-        ]
-      });
+    const userMessage = { type: 'user', content: input };
+    setMessages([...messages, userMessage]);
 
-      const reply = response.data.reply;
-      setMessages([...newMessages, { role: 'assistant', content: reply }]);
-
-      if (!summarySet) {
-        const firstLine = reply.split(/[.!?]/)[0];
-        const shortSummary = firstLine.length > 50 ? firstLine.slice(0, 50) + '...' : firstLine;
-        setSummary(shortSummary);
-        setSummarySet(true);
-      }
-
-    } catch {
-      setMessages([...newMessages, { role: 'assistant', content: 'Sorry, something went wrong.' }]);
-    } finally {
-      setLoading(false);
+    if (!rephrase) {
+      const brief = input.split(' ').slice(0, 10).join(' ') + '...';
+      setRephrase(brief);
     }
+
+    const replyChunks = [
+      "I'm sorry to hear that.",
+      "Sometimes we just need a gentle nudge to reconnect.",
+      "You're not alone in feeling this way."
+    ];
+
+    for (const chunk of replyChunks) {
+      await new Promise(r => setTimeout(r, 1000));
+      setMessages(prev => [...prev, { type: 'gpt', content: chunk }]);
+    }
+
+    setInput('');
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-white to-pink-100 p-6 flex flex-col justify-center items-center">
-      <h1 className="text-3xl font-bold mb-4 text-center text-gray-700">Welcome. This space is here for you.</h1>
-      <div className="w-full max-w-4xl bg-white p-6 rounded shadow-xl relative">
-        {summary && (
-          <div className="absolute top-4 right-4 bg-gray-100 p-2 rounded shadow text-sm text-gray-700 w-56 h-20 overflow-auto pointer-events-none">
-            <textarea
-              value={summary}
-              readOnly
-              className="w-full h-full bg-transparent border-none resize-none outline-none"
-            />
-          </div>
-        )}
-        <div className="space-y-4 h-96 overflow-y-auto border p-4 mb-6 bg-gray-50 rounded">
-          {messages.map((msg, idx) => (
-            <div key={idx} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
-              <div className={msg.role === 'user' ? 'bg-blue-100 inline-block px-4 py-3 rounded-lg' : 'bg-green-100 inline-block px-4 py-3 rounded-lg'}>
-                {msg.content}
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 p-4 sm:p-8">
+      <div className="max-w-2xl mx-auto">
+        {/* Logo and tagline */}
+        <div className="flex justify-between items-center mb-4">
+          <div className="text-3xl font-bold text-gray-800">🫂 Self Healer</div>
+          <input
+            value={rephrase}
+            disabled
+            placeholder="You’re feeling..."
+            className="text-sm text-gray-600 italic bg-white rounded-md px-3 py-1 shadow-sm"
+          />
+        </div>
+
+        <p className="text-center text-sm text-gray-500 mb-2 italic">
+          You're the one doing all the work — I'm just here to listen and offer a little perspective.
+        </p>
+
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center text-gray-700">
+          Welcome. This space is here for you.
+        </h1>
+
+        <div className="bg-white rounded-2xl shadow-md p-4 space-y-4 min-h-[400px]">
+          {messages.map((msg, i) => (
+            <div
+              key={i}
+              className={`rounded-xl px-4 py-2 text-base max-w-prose ${
+                msg.type === 'user' ? 'bg-gray-100 self-end text-right' : 'bg-green-100 self-start text-left'
+              } text-gray-800`}
+            >
+              {msg.content}
             </div>
           ))}
         </div>
-        <div className="flex flex-col">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-            rows={5}
-            className="w-full p-4 border rounded resize-none text-gray-700"
-            placeholder="Share what's on your mind..."
-          />
-          <button
-            onClick={handleSend}
-            disabled={loading}
-            className="mt-4 bg-blue-600 text-white text-lg font-semibold py-3 rounded w-3/4 self-center hover:bg-blue-700 transition duration-200"
-          >
-            {loading ? 'Sending...' : 'Send'}
-          </button>
+
+        <div className="text-center mt-2">
+          <span className="text-xl">❤️ ❤️ 🙏</span>
         </div>
-      </div>
-    </div>
-  );
-}
+
+        <div className="flex flex-col sm:flex-row items-center mt-4 gap-2">
+          <input
+            value
