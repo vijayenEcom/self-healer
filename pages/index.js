@@ -1,6 +1,14 @@
-import { useState } from 'react';
+// Self Healer Core
 
-export default function SelfHealer() {
+// This will house shared logic for mood detection, tone config, GPT session memory, and persona switching for both Self Healer and Wingman AI.
+
+// Starting point for backend logic will be documented and modularized here.
+
+import React, { useState } from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css'; // Tailwind or your styles
+
+function SelfHealer() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [rephrase, setRephrase] = useState('');
@@ -48,7 +56,6 @@ export default function SelfHealer() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
-        {/* Logo and tagline */}
         <div className="flex justify-between items-center mb-2">
           <div className="text-3xl font-bold text-gray-800">🫂 Self Healer</div>
           <input
@@ -99,4 +106,39 @@ export default function SelfHealer() {
       </div>
     </div>
   );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<SelfHealer />);
+
+// Add debug logging for API route (place this in pages/api/chat.js)
+export default async function handler(req, res) {
+  const { message } = req.body;
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: message }],
+        temperature: 0.7,
+      }),
+    });
+
+    const data = await response.json();
+    console.log("OpenAI raw response:", data);
+
+    if (data?.choices?.[0]?.message?.content) {
+      res.status(200).json({ reply: data.choices[0].message.content });
+    } else {
+      throw new Error(data?.error?.message || 'Invalid OpenAI response');
+    }
+  } catch (err) {
+    console.error("API ERROR:", err.message);
+    res.status(500).json({ reply: "Something went wrong." });
+  }
 }
