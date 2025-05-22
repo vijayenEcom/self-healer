@@ -1,13 +1,6 @@
-// Self Healer Core
+import { useState } from 'react';
 
-// This will house shared logic for mood detection, tone config, GPT session memory, and persona switching for both Self Healer and Wingman AI.
-
-// Starting point for backend logic will be documented and modularized here.
-
-import React, { useState } from 'react';
-import ReactDOM from 'react-dom/client';
-
-function SelfHealer() {
+export default function SelfHealer() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [rephrase, setRephrase] = useState('');
@@ -105,39 +98,4 @@ function SelfHealer() {
       </div>
     </div>
   );
-}
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(<SelfHealer />);
-
-// Add debug logging for API route (place this in pages/api/chat.js)
-export default async function handler(req, res) {
-  const { message } = req.body;
-
-  try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-3.5-turbo",
-        messages: [{ role: "user", content: message }],
-        temperature: 0.7,
-      }),
-    });
-
-    const data = await response.json();
-    console.log("OpenAI raw response:", data);
-
-    if (data?.choices?.[0]?.message?.content) {
-      res.status(200).json({ reply: data.choices[0].message.content });
-    } else {
-      throw new Error(data?.error?.message || 'Invalid OpenAI response');
-    }
-  } catch (err) {
-    console.error("API ERROR:", err.message);
-    res.status(500).json({ reply: "Something went wrong." });
-  }
 }
