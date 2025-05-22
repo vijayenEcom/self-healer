@@ -27,11 +27,13 @@ export default function SelfHealer() {
 
       const data = await res.json();
 
-      const replyChunks = (data.reply || "Sorry, I didn’t quite catch that.")
-        .split(/\n{2,}|(?<=\.\s{2,})/) // split on paragraph breaks or sentence groups
-        .map(chunk => chunk.trim())
-        .filter(Boolean);
+	const replyChunks = (data.reply || "Sorry, I didn’t quite catch that.")
+	.replace(/([.?!])\s+(?=[A-Z])/g, '$1|') // inject split markers after sentence ends
+	.split('|')
+	.map(chunk => chunk.trim())
+	.filter(Boolean);
 
+ 
       const replyMessages = replyChunks.map(content => ({
         type: 'gpt',
         content,
