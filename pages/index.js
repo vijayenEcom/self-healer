@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { logEvent } from '../utils/logger'; // ✅ Step 1: Import the logger
 
 export default function SelfHealer() {
   const [messages, setMessages] = useState([]);
@@ -7,6 +8,12 @@ export default function SelfHealer() {
 
   const handleSend = async () => {
     if (!input.trim()) return;
+
+    // ✅ Step 2: Log the user prompt
+    logEvent('user_prompt', {
+      prompt: input,
+      timestamp: Date.now(),
+    });
 
     const userMessage = { type: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
@@ -27,15 +34,14 @@ export default function SelfHealer() {
 
       const data = await res.json();
 
-		const replyChunks = (data.reply || "Sorry, I didn’t quite catch that.")
-		  .split(/\n{2,}/g) // Split on paragraph breaks
-		  .flatMap(para =>
-			para.match(/(?:[^.!?]+[.!?]+["']?\s*){1,2}/g) || [para] // Group 1–2 sentences together
-		  )
-		  .map(chunk => chunk.trim())
-		  .filter(Boolean);
+      const replyChunks = (data.reply || "Sorry, I didn’t quite catch that.")
+        .split(/\n{2,}/g) // Split on paragraph breaks
+        .flatMap(para =>
+          para.match(/(?:[^.!?]+[.!?]+["']?\s*){1,2}/g) || [para] // Group 1–2 sentences together
+        )
+        .map(chunk => chunk.trim())
+        .filter(Boolean);
 
- 
       const replyMessages = replyChunks.map(content => ({
         type: 'gpt',
         content,

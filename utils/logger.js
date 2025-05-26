@@ -1,7 +1,6 @@
-const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwcv9Eovi3finx06qpdvtV4AOQ-WXmB-AcxMYgC3kMyipo1zp4y_an0Mrtvb6o6UPp5/exec'; // ⬅️ Replace this with your actual Web App URL
+const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwcv9Eovi3finx06qpdvtV4AOQ-WXmB-AcxMYgC3kMyipo1zp4y_an0Mrtvb6o6UPp5/exec';
 
 export async function logEvent(event, details = {}) {
-  // Log to Google Sheet if it's a user prompt
   if (event === 'user_prompt') {
     try {
       await fetch(GOOGLE_SHEET_WEBHOOK, {
@@ -14,7 +13,7 @@ export async function logEvent(event, details = {}) {
     }
   }
 
-  // Also log to your own API (optional internal logs)
+  // Optional: Internal logging
   try {
     await fetch('/api/logEvent', {
       method: 'POST',
