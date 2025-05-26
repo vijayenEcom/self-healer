@@ -1,7 +1,9 @@
 const GOOGLE_SHEET_WEBHOOK = 'https://script.google.com/macros/s/AKfycbwcv9Eovi3finx06qpdvtV4AOQ-WXmB-AcxMYgC3kMyipo1zp4y_an0Mrtvb6o6UPp5/exec';
 
 export async function logEvent(event, details = {}) {
+  // Temporarily disabled Google Sheet logging
   if (event === 'user_prompt') {
+    /*
     try {
       await fetch(GOOGLE_SHEET_WEBHOOK, {
         method: 'POST',
@@ -11,9 +13,10 @@ export async function logEvent(event, details = {}) {
     } catch (err) {
       console.error('Google Sheet logging failed:', err);
     }
+    */
   }
 
-  // Optional: Internal logging
+  // Still logs internally if needed
   try {
     await fetch('/api/logEvent', {
       method: 'POST',
