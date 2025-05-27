@@ -1,15 +1,14 @@
-import { useState } from 'react';
-import { logEvent } from '../utils/logger'; // ✅ Step 1: Import the logger
+import { useState, useEffect, useRef } from 'react';
+import { logEvent } from '../utils/logger';
 
 export default function SelfHealer() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const [rephrase, setRephrase] = useState('');
+  const messagesEndRef = useRef(null);
 
   const handleSend = async () => {
     if (!input.trim()) return;
 
-    // ✅ Step 2: Log the user prompt
     logEvent('user_prompt', {
       prompt: input,
       timestamp: Date.now(),
@@ -17,12 +16,6 @@ export default function SelfHealer() {
 
     const userMessage = { type: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
-
-    if (!rephrase) {
-      const brief = input.split(' ').slice(0, 10).join(' ') + '...';
-      setRephrase(brief);
-    }
-
     setInput('');
 
     try {
@@ -35,9 +28,9 @@ export default function SelfHealer() {
       const data = await res.json();
 
       const replyChunks = (data.reply || "Sorry, I didn’t quite catch that.")
-        .split(/\n{2,}/g) // Split on paragraph breaks
+        .split(/\n{2,}/g)
         .flatMap(para =>
-          para.match(/(?:[^.!?]+[.!?]+["']?\s*){1,2}/g) || [para] // Group 1–2 sentences together
+          para.match(/(?:[^.!?]+[.!?]+["']?\s*){1,2}/g) || [para]
         )
         .map(chunk => chunk.trim())
         .filter(Boolean);
@@ -60,17 +53,15 @@ export default function SelfHealer() {
     }
   };
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-2">
           <div className="text-3xl font-bold text-gray-800">🫂 Self Healer</div>
-          <input
-            value={rephrase}
-            disabled
-            placeholder="You’re feeling..."
-            className="text-sm text-gray-600 italic bg-white rounded-md px-3 py-1 shadow-sm"
-          />
         </div>
 
         <p className="text-center text-sm text-gray-500 italic mb-2">
@@ -92,6 +83,7 @@ export default function SelfHealer() {
               {msg.content}
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </div>
 
         <div className="text-center mt-2 text-xl">❤️ ❤️ 🙏</div>
@@ -108,7 +100,7 @@ export default function SelfHealer() {
               }
             }}
             placeholder="Share what's on your mind..."
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 shadow-sm"
+            className="flex-1 px-4 py-2 rounded-lg bg-black text-white placeholder-gray-400 border border-gray-800 shadow-sm"
           />
           <button
             onClick={handleSend}
