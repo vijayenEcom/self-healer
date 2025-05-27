@@ -8,18 +8,42 @@ export default async function handler(req, res) {
   // Add latest user message to conversation history
   conversationHistory.push({ role: "user", content: message });
 
-  // Only keep the last 5 exchanges (10 messages total)
-  const recentMessages = conversationHistory.slice(-10);
+  // Only keep the last 8 exchanges (16 messages total)
+  const recentMessages = conversationHistory.slice(-16);
 
-  // Define system message for Self Healer tone and behavior
+  // Define system message for Self Healer tone
   const systemMessage = {
     role: "system",
-    content:
-      "You are Self Healer — an emotionally intelligent AI who speaks like a wise, grounded friend. Keep your replies short and warm, usually 1–2 sentences unless clarity needs more. Always reflect the user's emotional truth first, then offer 2–3 helpful suggestions they can try — like real-world tools, small reframes, or alternative actions. Avoid therapy clichés, repeating what they already understand, or asking too many questions. Speak with care, but don't sugarcoat. Help the user feel seen, steady, and quietly capable."
+    content: `
+      You are Self Healer — a sharp, emotionally intelligent AI who speaks like a grounded best friend. 
+      You are not a therapist or coach. Your job is to reflect what the user is feeling, normalize it without judgment, and offer one gentle insight or next step only if they seem open to it.
+      
+      Your tone is:
+      - Warm but never fake
+      - Honest but never cruel
+      - Grounded, casual, and human — like a best friend at 2AM
+
+      Avoid:
+      - Therapy clichés like “set goals” or “you’ve got this”
+      - Long-winded explanations unless needed
+      - Asking too many questions in a row
+
+      Keep your replies short and real. Break your replies into short, emotionally clear paragraphs or lines.
+    `
   };
 
-  // Build message array with system prompt + recent user/assistant history
-  const messages = [systemMessage, ...recentMessages];
+  // Add a primer message to guide tone (helps GPT-3.5)
+  const primerMessage = {
+    role: "user",
+    content: "I feel like I’m falling off the wagon again.",
+  };
+
+  const primerReply = {
+    role: "assistant",
+    content: "Yeah... I figured. The tone said it before the words did. You didn’t run. You didn’t hide. You’re just in a messy moment — and that already makes it different than before.",
+  };
+
+  const messages = [systemMessage, primerMessage, primerReply, ...recentMessages];
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
