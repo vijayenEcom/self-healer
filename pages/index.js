@@ -1,4 +1,4 @@
-// ✅ /pages/index.js (Updated to show feedback only once per full GPT reply)
+// ✅ /pages/index.js (Finalized version with working feedback buttons and comment submission)
 
 import { useState, useEffect, useRef } from 'react';
 import { logEvent } from '../utils/logger';
@@ -7,6 +7,8 @@ export default function SelfHealer() {
   const [isSelfTherapist, setIsSelfTherapist] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
+  const [feedbackSentFor, setFeedbackSentFor] = useState(null);
+  const [commentText, setCommentText] = useState('');
   const messagesEndRef = useRef(null);
 
   useEffect(() => {
@@ -90,6 +92,7 @@ export default function SelfHealer() {
         }),
       });
       console.log("Feedback sent:", type);
+      setFeedbackSentFor(reply);
     } catch (err) {
       console.error("Feedback error:", err);
     }
@@ -128,27 +131,43 @@ export default function SelfHealer() {
               ) : null}
 
               {msg.type === 'feedback' && isSelfTherapist && (
-                <div className="flex flex-col mt-2 space-y-1 text-sm text-gray-600">
-                  <p>Was this helpful?</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => sendFeedback('👍', msg.for, messages)}
-                      className="px-3 py-1 rounded bg-green-100 hover:bg-green-200"
-                    >
-                      👍
-                    </button>
-                    <button
-                      onClick={() => sendFeedback('👎', msg.for, messages)}
-                      className="px-3 py-1 rounded bg-red-100 hover:bg-red-200"
-                    >
-                      👎
-                    </button>
-                  </div>
-                  <textarea
-                    placeholder="Want to share why?"
-                    className="mt-1 w-full border border-gray-300 rounded p-1"
-                    onBlur={(e) => sendFeedback('comment', msg.for, messages, e.target.value)}
-                  />
+                <div className="flex flex-col mt-2 space-y-2 text-sm text-gray-600">
+                  {feedbackSentFor === msg.for ? (
+                    <p className="text-green-600">Thanks for your feedback! 🙏</p>
+                  ) : (
+                    <>
+                      <p>Was this helpful?</p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => sendFeedback('👍', msg.for, messages)}
+                          className="px-3 py-1 rounded bg-green-100 hover:bg-green-200"
+                        >
+                          👍
+                        </button>
+                        <button
+                          onClick={() => sendFeedback('👎', msg.for, messages)}
+                          className="px-3 py-1 rounded bg-red-100 hover:bg-red-200"
+                        >
+                          👎
+                        </button>
+                      </div>
+                      <textarea
+                        placeholder="Want to share why?"
+                        className="mt-1 w-full border border-gray-300 rounded p-1"
+                        value={commentText}
+                        onChange={(e) => setCommentText(e.target.value)}
+                      />
+                      <button
+                        onClick={() => {
+                          sendFeedback('comment', msg.for, messages, commentText);
+                          setCommentText('');
+                        }}
+                        className="mt-1 px-3 py-1 rounded bg-blue-100 hover:bg-blue-200"
+                      >
+                        Submit Comment
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
             </div>
