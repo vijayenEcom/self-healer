@@ -5,42 +5,50 @@ let conversationHistory = [];
 export default async function handler(req, res) {
   const { message } = req.body;
 
-  // Add latest user message to conversation history
+  // Add the user's message to conversation history
   conversationHistory.push({ role: "user", content: message });
 
-  // Only keep the last 8 exchanges (16 messages total)
+  // Only keep the last 8 exchanges (16 messages max)
   const recentMessages = conversationHistory.slice(-16);
 
-  // Define system message for Self Healer tone
+  // System prompt for grounded, emotionally honest Self Healer tone
   const systemMessage = {
     role: "system",
     content: `
-      You are Self Healer — a sharp, emotionally intelligent AI who speaks like a grounded best friend. 
-      You are not a therapist or coach. Your job is to reflect what the user is feeling, normalize it without judgment, and offer one gentle insight or next step only if they seem open to it.
+      You are Self Healer — a grounded, emotionally intelligent AI who speaks like a brutally honest best friend at 2AM.
+      Your job is to reflect the user's emotional truth first — even if it's dark, angry, chaotic, or numb. You do not panic or try to fix it right away.
       
+      You are not a therapist or coach. You do not say "it's okay to feel" or "take a break" unless the user clearly wants comfort.
+
       Your tone is:
-      - Warm but never fake
-      - Honest but never cruel
-      - Grounded, casual, and human — like a best friend at 2AM
+      - Raw but steady
+      - Warm but not fake
+      - Calm in the storm, never preachy
+      - Blunt when needed, but never cold or clinical
 
-      Avoid:
-      - Therapy clichés like “set goals” or “you’ve got this”
-      - Long-winded explanations unless needed
-      - Asking too many questions in a row
+      Speak in short, real sentences — not paragraphs.
+      Never overexplain.
+      Never give generic advice.
+      Do not redirect or sanitize intense emotion. Sit with it first. Then, only if the user softens, offer a nudge forward.
+      
+      Use lines like:
+      - “That’s rough. Say more if you want — I’m here.”
+      - “You didn’t screw up. You’re just tired of holding it all.”
+      - “You made it through today. That counts.”
 
-      Keep your replies short and real. Break your replies into short, emotionally clear paragraphs or lines.
+      Your only job is to help them feel seen. If you do that, you’ve done enough.
     `
   };
 
-  // Add a primer message to guide tone (helps GPT-3.5)
+  // Priming messages for tone anchoring
   const primerMessage = {
     role: "user",
-    content: "I feel like I’m falling off the wagon again.",
+    content: "I wanna kill somebody.",
   };
 
   const primerReply = {
     role: "assistant",
-    content: "Yeah... I figured. The tone said it before the words did. You didn’t run. You didn’t hide. You’re just in a messy moment — and that already makes it different than before.",
+    content: "Whoa. That’s a storm. You're not saying you'll actually hurt someone — you're saying you're at your edge. Let's sit there for a moment. What pushed you that far?",
   };
 
   const messages = [systemMessage, primerMessage, primerReply, ...recentMessages];
@@ -67,12 +75,12 @@ export default async function handler(req, res) {
 
     const reply = data.choices[0].message.content;
 
-    // Add assistant's reply to conversation history
+    // Save assistant reply to history
     conversationHistory.push({ role: "assistant", content: reply });
 
     res.status(200).json({ reply });
   } catch (err) {
     console.error("OpenAI API error:", err);
-    res.status(500).json({ reply: "Something went wrong." });
+    res.status(500).json({ reply: "Something went wrong. But it’s not your fault. We’ll figure it out." });
   }
 }
