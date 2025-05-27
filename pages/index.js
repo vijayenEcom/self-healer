@@ -1,5 +1,3 @@
-// ✅ /pages/index.js (Finalized version with working feedback buttons and comment submission)
-
 import { useState, useEffect, useRef } from 'react';
 import { logEvent } from '../utils/logger';
 
@@ -79,20 +77,27 @@ export default function SelfHealer() {
   const sendFeedback = async (type, reply, messages, comment = "") => {
     const lastUserMessage = [...messages].reverse().find(m => m.type === 'user')?.content;
 
+    if (type === 'comment' && !comment.trim()) return;
+
+    const actualRating = type === 'comment' ? '📝' : type;
+
+    if (feedbackSentFor === reply) return; // Prevent duplicate feedback
+
     try {
       await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          rating: type,
+          rating: actualRating,
           message: lastUserMessage || "",
           reply,
           comment,
           timestamp: Date.now()
         }),
       });
-      console.log("Feedback sent:", type);
+      console.log("Feedback sent:", actualRating);
       setFeedbackSentFor(reply);
+      setCommentText('');
     } catch (err) {
       console.error("Feedback error:", err);
     }
@@ -158,10 +163,7 @@ export default function SelfHealer() {
                         onChange={(e) => setCommentText(e.target.value)}
                       />
                       <button
-                        onClick={() => {
-                          sendFeedback('comment', msg.for, messages, commentText);
-                          setCommentText('');
-                        }}
+                        onClick={() => sendFeedback('comment', msg.for, messages, commentText)}
                         className="mt-1 px-3 py-1 rounded bg-blue-100 hover:bg-blue-200"
                       >
                         Submit Comment
