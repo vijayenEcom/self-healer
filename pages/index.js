@@ -1,6 +1,19 @@
 import { useState, useEffect, useRef } from 'react';
 import { logEvent } from '../utils/logger';
 
+// Determine which version is running based on domain
+const isSelfTherapist =
+  typeof window !== "undefined" &&
+  window.location.hostname.includes("selftherapist");
+
+const appName = isSelfTherapist ? "Self Therapist" : "Self Healer";
+const subtitle = isSelfTherapist
+  ? "This is your space. Raw, honest, beta-tested truth."
+  : "You're the one doing all the work — I'm just here to listen and offer a little perspective.";
+const welcomeText = isSelfTherapist
+  ? "Welcome to the beta. Say anything. No filter, no fluff."
+  : "Welcome. This space is here for you.";
+
 export default function SelfHealer() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
@@ -47,7 +60,7 @@ export default function SelfHealer() {
         ...prev,
         {
           type: 'gpt',
-          content: 'There was an error connecting to Self Healer. Try again soon.',
+          content: `There was an error connecting to ${appName}. Try again soon.`,
         },
       ]);
     }
@@ -61,15 +74,15 @@ export default function SelfHealer() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 p-4 sm:p-8">
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-2">
-          <div className="text-3xl font-bold text-gray-800">🫂 Self Healer</div>
+          <div className="text-3xl font-bold text-gray-800">🫂 {appName}</div>
         </div>
 
         <p className="text-center text-sm text-gray-500 italic mb-2">
-          You're the one doing all the work — I'm just here to listen and offer a little perspective.
+          {subtitle}
         </p>
 
         <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-6 text-center text-gray-700">
-          Welcome. This space is here for you.
+          {welcomeText}
         </h1>
 
         <div className="bg-white rounded-2xl shadow-md p-4 space-y-4 min-h-[400px] max-h-[500px] overflow-y-auto">
