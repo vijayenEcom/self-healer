@@ -1,7 +1,8 @@
+// ✅ /pages/index.js (Self Therapist version)
+
 import { useState, useEffect, useRef } from 'react';
 import { logEvent } from '../utils/logger';
 
-// Determine which version is running based on domain
 const isSelfTherapist =
   typeof window !== "undefined" &&
   window.location.hostname.includes("selftherapist");
@@ -66,6 +67,27 @@ export default function SelfHealer() {
     }
   };
 
+  const sendFeedback = async (type, reply, messages, comment = "") => {
+    const lastUserMessage = [...messages].reverse().find(m => m.type === 'user')?.content;
+
+    try {
+      await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          rating: type,
+          message: lastUserMessage || "",
+          reply,
+          comment,
+          timestamp: Date.now()
+        }),
+      });
+      console.log("Feedback sent:", type);
+    } catch (err) {
+      console.error("Feedback error:", err);
+    }
+  };
+
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -87,13 +109,38 @@ export default function SelfHealer() {
 
         <div className="bg-white rounded-2xl shadow-md p-4 space-y-4 min-h-[400px] max-h-[500px] overflow-y-auto">
           {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={`rounded-xl px-4 py-2 text-base max-w-prose ${
-                msg.type === 'user' ? 'bg-gray-100 self-end text-right' : 'bg-green-100 self-start text-left'
-              } text-gray-800`}
-            >
-              {msg.content}
+            <div key={i}>
+              <div
+                className={`rounded-xl px-4 py-2 text-base max-w-prose ${
+                  msg.type === 'user' ? 'bg-gray-100 self-end text-right' : 'bg-green-100 self-start text-left'
+                } text-gray-800`}
+              >
+                {msg.content}
+              </div>
+              {msg.type === 'gpt' && isSelfTherapist && (
+                <div className="flex flex-col mt-2 space-y-1 text-sm text-gray-600">
+                  <p>Was this helpful?</p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => sendFeedback('👍', msg.content, messages)}
+                      className="px-3 py-1 rounded bg-green-100 hover:bg-green-200"
+                    >
+                      👍
+                    </button>
+                    <button
+                      onClick={() => sendFeedback('👎', msg.content, messages)}
+                      className="px-3 py-1 rounded bg-red-100 hover:bg-red-200"
+                    >
+                      👎
+                    </button>
+                  </div>
+                  <textarea
+                    placeholder="Want to share why?"
+                    className="mt-1 w-full border border-gray-300 rounded p-1"
+                    onBlur={(e) => sendFeedback('comment', msg.content, messages, e.target.value)}
+                  />
+                </div>
+              )}
             </div>
           ))}
           <div ref={messagesEndRef} />
