@@ -1,24 +1,27 @@
-// ✅ /pages/index.js (Self Therapist version)
+// ✅ /pages/index.js (Self Therapist version with dynamic isSelfTherapist detection)
 
 import { useState, useEffect, useRef } from 'react';
 import { logEvent } from '../utils/logger';
 
-const isSelfTherapist =
-  typeof window !== "undefined" &&
-  window.location.hostname.includes("selftherapist");
-
-const appName = isSelfTherapist ? "Self Therapist" : "Self Healer";
-const subtitle = isSelfTherapist
-  ? "This is your space. Raw, honest, beta-tested truth."
-  : "You're the one doing all the work — I'm just here to listen and offer a little perspective.";
-const welcomeText = isSelfTherapist
-  ? "Welcome to the beta. Say anything. No filter, no fluff."
-  : "Welcome. This space is here for you.";
-
 export default function SelfHealer() {
+  const [isSelfTherapist, setIsSelfTherapist] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const messagesEndRef = useRef(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setIsSelfTherapist(window.location.hostname.includes("selftherapist"));
+    }
+  }, []);
+
+  const appName = isSelfTherapist ? "Self Therapist" : "Self Healer";
+  const subtitle = isSelfTherapist
+    ? "This is your space. Raw, honest, beta-tested truth."
+    : "You're the one doing all the work — I'm just here to listen and offer a little perspective.";
+  const welcomeText = isSelfTherapist
+    ? "Welcome to the beta. Say anything. No filter, no fluff."
+    : "Welcome. This space is here for you.";
 
   const handleSend = async () => {
     if (!input.trim()) return;
