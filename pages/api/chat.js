@@ -44,6 +44,7 @@ function flowGuard(reply) {
 }
 
 export default async function handler(req, res) {
+  const isSelfConfidant = req.headers.host?.includes("selftherapist");
   const { message } = req.body;
 
   conversationHistory.push({ role: "user", content: message });
