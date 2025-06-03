@@ -3,7 +3,7 @@ import Head from 'next/head';
 import { logEvent } from '../utils/logger';
 
 export default function SelfHealer() {
-  const [isSelfTherapist, setIsSelfTherapist] = useState(false);
+  const [isSelfConfidant, setIsSelfConfidant] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [feedbackSentFor, setFeedbackSentFor] = useState(null);
@@ -12,15 +12,15 @@ export default function SelfHealer() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setIsSelfTherapist(window.location.hostname.includes("selftherapist"));
+      setIsSelfConfidant(window.location.hostname.includes("self-confidant"));
     }
   }, []);
 
-  const appName = isSelfTherapist ? "Self Confidant" : "Self Healer";
-  const subtitle = isSelfTherapist
+  const appName = isSelfConfidant ? "Self Confidant" : "Self Healer";
+  const subtitle = isSelfConfidant
     ? "This space is yours. Say it all — honestly, freely, anonymously."
     : "You're the one doing all the work — I'm just here to listen and offer a little perspective.";
-  const welcomeText = isSelfTherapist
+  const welcomeText = isSelfConfidant
     ? "Welcome to Self Confidant. No judgment. No advice unless you want it."
     : "Welcome. This space is here for you.";
 
@@ -114,7 +114,7 @@ export default function SelfHealer() {
       <title>{appName + ' - Your Space to Reflect'}</title>
     </Head>
 
-    <div className={`min-h-screen p-4 sm:p-8 ${isSelfTherapist ? "bg-gradient-to-br from-blue-100 via-blue-50 to-white" : "bg-gradient-to-br from-blue-50 via-white to-pink-50"}`}>
+    <div className={`min-h-screen p-4 sm:p-8 ${isSelfConfidant ? "bg-gradient-to-br from-blue-100 via-blue-50 to-white" : "bg-gradient-to-br from-blue-50 via-white to-pink-50"}`}>
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-2">
           <div className="text-3xl font-bold text-gray-800">🫂 {appName}</div>
