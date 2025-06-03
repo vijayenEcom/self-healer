@@ -108,9 +108,11 @@ export default function SelfHealer() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  return (<Head>
-  <title>{appName + ' - Your Space to Reflect'}</title>
-</Head>
+  return (
+  <>
+    <Head>
+      <title>{appName + ' - Your Space to Reflect'}</title>
+    </Head>
 
     <div className={`min-h-screen p-4 sm:p-8 ${isSelfTherapist ? "bg-gradient-to-br from-blue-100 via-blue-50 to-white" : "bg-gradient-to-br from-blue-50 via-white to-pink-50"}`}>
       <div className="max-w-2xl mx-auto">
