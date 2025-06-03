@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import Head from 'next/head';
 import { logEvent } from '../utils/logger';
 
 export default function SelfHealer() {
@@ -15,12 +16,12 @@ export default function SelfHealer() {
     }
   }, []);
 
-  const appName = isSelfTherapist ? "Self Therapist" : "Self Healer";
+  const appName = isSelfTherapist ? "Self Confidant" : "Self Healer";
   const subtitle = isSelfTherapist
-    ? "This is your space. Raw, honest, beta-tested truth."
+    ? "This space is yours. Say it all — honestly, freely, anonymously."
     : "You're the one doing all the work — I'm just here to listen and offer a little perspective.";
   const welcomeText = isSelfTherapist
-    ? "Welcome to the beta. Say anything. No filter, no fluff."
+    ? "Welcome to Self Confidant. No judgment. No advice unless you want it."
     : "Welcome. This space is here for you.";
 
   const handleSend = async () => {
@@ -107,8 +108,11 @@ export default function SelfHealer() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-pink-50 p-4 sm:p-8">
+  return (<Head>
+  <title>{appName} – Your Space to Reflect</title>
+</Head>
+
+    <div className={`min-h-screen p-4 sm:p-8 ${isSelfTherapist ? "bg-gradient-to-br from-blue-100 via-blue-50 to-white" : "bg-gradient-to-br from-blue-50 via-white to-pink-50"}`}>
       <div className="max-w-2xl mx-auto">
         <div className="flex justify-between items-center mb-2">
           <div className="text-3xl font-bold text-gray-800">🫂 {appName}</div>
