@@ -208,5 +208,7 @@ export default function SelfHealer() {
         </div>
       </div>
     </div>
-  );
+  
+  </>
+);
 }
