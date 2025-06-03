@@ -1,3 +1,5 @@
+// Self Healer API Logic — Updated with Emotion Handling & Flow Fixes
+
 let conversationHistory = [];
 
 function toneGuard(rawReply, lastUserMessage) {
@@ -33,6 +35,7 @@ function flowGuard(reply) {
     return [...nonQuestionLines, questions.slice(-1)[0]].join("\n").trim();
   }
 
+  // Suppress ending question 50% of the time
   if (questions.length === 1 && Math.random() < 0.5) {
     return lines.filter(line => !line.trim().endsWith("?")).join("\n").trim();
   }
@@ -41,6 +44,7 @@ function flowGuard(reply) {
 }
 
 export default async function handler(req, res) {
+  const isSelfConfidant = req.headers.host?.includes("selftherapist");
   const { message } = req.body;
 
   conversationHistory.push({ role: "user", content: message });
@@ -66,38 +70,50 @@ Avoid:
 - Long explanations unless absolutely needed
 
 Let silence do the heavy lifting. Let them feel seen.
-`.trim(),
+    `.trim(),
   };
 
   const primerMessages = [
-    { role: "user", content: "I wanna kill somebody." },
     {
-      role: "assistant",
-      content: "Whoa. That’s a storm. You're not saying you'll actually hurt someone — you're saying you're at your edge. Let's stay there for a second. What pushed you that far?",
+      role: "user",
+      content: "I wanna kill somebody."
     },
-    { role: "user", content: "I’ve failed. At everything." },
     {
       role: "assistant",
-      content: "That’s a brutal sentence. Feels like there’s no piece left unshattered, huh? Say more — what’s hitting the hardest?",
-    },
-    { role: "user", content: "I’m tired of pretending I’m okay." },
-    {
-      role: "assistant",
-      content: "Then stop. You don’t owe the world a fake smile. Just breathe for now. That’s enough.",
-    },
-    { role: "user", content: "I hate how stuck I feel." },
-    {
-      role: "assistant",
-      content: "Stuck isn’t failure. It’s friction. And yeah — it hurts like hell.",
+      content: "Whoa. That’s a storm. You're not saying you'll actually hurt someone — you're saying you're at your edge. Let's stay there for a second. What pushed you that far?"
     },
     {
       role: "user",
-      content: "Not having any. I'm an IT Consultant so I have to find my own work",
+      content: "I’ve failed. At everything."
     },
     {
       role: "assistant",
-      content: "That’s not just work stress. That’s survival mode. No safety net, no salary. Just you vs the silence.",
+      content: "That’s a brutal sentence. Feels like there’s no piece left unshattered, huh? Say more — what’s hitting the hardest?"
     },
+    {
+      role: "user",
+      content: "I’m tired of pretending I’m okay."
+    },
+    {
+      role: "assistant",
+      content: "Then stop. You don’t owe the world a fake smile. Just breathe for now. That’s enough."
+    },
+    {
+      role: "user",
+      content: "I hate how stuck I feel."
+    },
+    {
+      role: "assistant",
+      content: "Stuck isn’t failure. It’s friction. And yeah — it hurts like hell."
+    },
+    {
+      role: "user",
+      content: "Not having any. I'm an IT Consultant so I have to find my own work"
+    },
+    {
+      role: "assistant",
+      content: "That’s not just work stress. That’s survival mode. No safety net, no salary. Just you vs the silence."
+    }
   ];
 
   const messages = [systemMessage, ...primerMessages, ...recentMessages];
@@ -113,7 +129,6 @@ Let silence do the heavy lifting. Let them feel seen.
         model: "gpt-3.5-turbo",
         messages,
         temperature: 0.7,
-        max_tokens: 600,
       }),
     });
 
@@ -128,12 +143,12 @@ Let silence do the heavy lifting. Let them feel seen.
       throw new Error("No usable response from OpenAI");
     }
 
-    let reply = data.choices[0].message.content.trim();
-    reply = toneGuard(reply, message);
-    reply = flowGuard(reply);
+    const rawReply = data.choices[0].message.content;
+    const replyWithTone = toneGuard(rawReply, message);
+    const finalReply = flowGuard(replyWithTone);
 
-    conversationHistory.push({ role: "assistant", content: reply });
-    res.status(200).json({ reply });
+    conversationHistory.push({ role: "assistant", content: finalReply });
+    res.status(200).json({ reply: finalReply });
   } catch (err) {
     console.error("OpenAI API error:", err);
     res.status(500).json({
