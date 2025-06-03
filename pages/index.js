@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Head from 'next/head';
 import { logEvent } from '../utils/logger';
-import { parseReplyChunks } from '../utils/parseReply';
 
 export default function SelfHealer() {
   const [isSelfConfidant, setIsSelfConfidant] = useState(false);
@@ -46,7 +45,13 @@ export default function SelfHealer() {
 
       const data = await res.json();
 
-      const replyChunks = parseReplyChunks(data.reply || "Sorry, I didn’t quite catch that.");
+      const replyChunks = (data.reply || "Sorry, I didn’t quite catch that.")
+        .split(/\n{2,}/g)
+        .flatMap(para =>
+          para.match(/(?:[^.!?]+[.!?]+["']?\s*){1,2}/g) || [para]
+        )
+        .map(chunk => chunk.trim())
+        .filter(Boolean);
 
       const replyMessages = replyChunks.map(content => ({
         type: 'gpt',
@@ -136,7 +141,7 @@ export default function SelfHealer() {
                 </div>
               ) : null}
 
-              {msg.type === 'feedback' && isSelfTherapist && (
+              {msg.type === 'feedback' && isSelfConfidant && (
                 <div className="flex flex-col mt-2 space-y-2 text-sm text-gray-600">
                   {feedbackSentFor === msg.for ? (
                     <p className="text-green-600">Thanks for your feedback! 🙏</p>
