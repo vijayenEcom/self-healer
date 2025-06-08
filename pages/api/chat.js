@@ -58,16 +58,23 @@ module.exports = async function handler(req, res) {
   const recentMessages = conversationHistory.slice(-16);
 
   // Consent logic
-  if (pendingConsent) {
-    if (message.toLowerCase().includes("yes")) {
-      pendingConsent = false; // proceed with advice
-    } else {
-      pendingConsent = false;
-      return res.status(200).json({
-        reply: "Got it — no rush. I'm here to hold space if you just want to vent or sit with it for a bit."
-      });
-    }
-  } else if (needsConsent(message)) {
+if (pendingConsent) {
+  const lower = message.toLowerCase();
+  const affirmatives = [
+    "yes", "help me", "advise me", "what should i do", "what are my options",
+    "tell me", "guide me", "i need advice", "how do i fix this", "walk me through"
+  ];
+
+  if (affirmatives.some(phrase => lower.includes(phrase))) {
+    pendingConsent = false; // switch to advice mode
+  } else {
+    pendingConsent = false;
+    return res.status(200).json({
+      reply: "Got it — no rush. I'm here to hold space if you just want to vent or sit with it for a bit."
+    });
+  }
+}
+ else if (needsConsent(message)) {
     pendingConsent = true;
     return res.status(200).json({
       reply: "That sounds heavy — and important. Would you like me to help you think through some next steps, or would you rather sit with it for now?"
