@@ -1,5 +1,6 @@
+// ✅ FULL FIXED chat.js FOR API (pages/api/chat.js)
+
 let conversationHistory = [];
-let pendingConsent = false;
 
 function toneGuard(rawReply, lastUserMessage) {
   const forbiddenPhrases = [
@@ -51,33 +52,27 @@ function needsConsent(message) {
   return triggers.some(trigger => message.toLowerCase().includes(trigger));
 }
 
+function isAffirmative(msg) {
+  const lower = msg.toLowerCase();
+  return [
+    "yes", "help me", "advise me", "what should i do", "what are my options",
+    "tell me", "guide me", "i need advice", "i need steps", "walk me through", "give me advice"
+  ].some(phrase => lower.includes(phrase));
+}
+
 module.exports = async function handler(req, res) {
-  const { message } = req.body;
+  let { message, pendingConsent: frontendConsent } = req.body;
 
   conversationHistory.push({ role: "user", content: message });
   const recentMessages = conversationHistory.slice(-16);
 
-  // Consent logic
-if (pendingConsent) {
-  const lower = message.toLowerCase();
-  const affirmatives = [
-    "yes", "help me", "advise me", "what should i do", "what are my options",
-    "tell me", "guide me", "i need advice", "how do i fix this", "walk me through"
-  ];
-
-  if (affirmatives.some(phrase => lower.includes(phrase))) {
-    pendingConsent = false; // switch to advice mode
-  } else {
-    pendingConsent = false;
+  if (frontendConsent && isAffirmative(message)) {
+    // Proceed with advice
+    frontendConsent = false;
+  } else if (!frontendConsent && needsConsent(message)) {
     return res.status(200).json({
-      reply: "Got it — no rush. I'm here to hold space if you just want to vent or sit with it for a bit."
-    });
-  }
-}
- else if (needsConsent(message)) {
-    pendingConsent = true;
-    return res.status(200).json({
-      reply: "That sounds heavy — and important. Would you like me to help you think through some next steps, or would you rather sit with it for now?"
+      reply: "That sounds heavy — and important. Would you like me to help you think through some next steps, or would you rather sit with it for now?",
+      pendingConsent: true
     });
   }
 
@@ -118,19 +113,6 @@ Keep it raw, human, short, and emotionally intelligent.
       role: "assistant",
       content: "Then stop. You don’t owe the world a fake smile. Just breathe for now. That’s enough.",
     },
-    { role: "user", content: "I hate how stuck I feel." },
-    {
-      role: "assistant",
-      content: "Stuck isn’t failure. It’s friction. And yeah — it hurts like hell.",
-    },
-    {
-      role: "user",
-      content: "Not having any. I'm an IT Consultant so I have to find my own work"
-    },
-    {
-      role: "assistant",
-      content: "That’s not just work stress. That’s survival mode. No safety net, no salary. Just you vs the silence.",
-    },
   ];
 
   const messages = [systemMessage, ...primerMessages, ...recentMessages];
@@ -152,12 +134,7 @@ Keep it raw, human, short, and emotionally intelligent.
 
     const data = await response.json();
 
-    if (
-      !data.choices ||
-      !data.choices.length ||
-      !data.choices[0].message ||
-      !data.choices[0].message.content
-    ) {
+    if (!data.choices?.length || !data.choices[0].message?.content) {
       throw new Error("No usable response from OpenAI");
     }
 
@@ -166,11 +143,12 @@ Keep it raw, human, short, and emotionally intelligent.
     reply = flowGuard(reply);
 
     conversationHistory.push({ role: "assistant", content: reply });
-    res.status(200).json({ reply });
+    res.status(200).json({ reply, pendingConsent: false });
   } catch (err) {
     console.error("OpenAI API error:", err);
     res.status(500).json({
       reply: "You’re trying to say something important — and it slipped past me. Say it again, and I’ll actually listen this time.",
+      pendingConsent: false
     });
   }
 };
